@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Date;
 
 // 스프링 시큐리티에 UsernamePasswordAuthenticationFilter 가 있음
+// SecurityConfig 에 login 기능이 막혀있는데 아래 filter를 쓰면 login 기능이 동작
 // login 요청해서 username, password 전송하면(post) -> filter 동작
 // spring security config 에서 formLogin.disabled() 동작을 안함 -> 다시 동작하기위해 filter를 추가해야한다.
 
@@ -50,6 +51,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             // 로그인 시도 token 발행
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(member.getUsername(), member.getPassword());
+//            log.info("로그인 시도 token 발행 : {}", authenticationToken.getCredentials());
 
             // PrincipalDetailsService 실행 -> authentication 리턴
             // DB에 있는 username 과 password 가 일치한다.
@@ -75,6 +77,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
             throws IOException, ServletException {
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+        log.info("토큰화 작업중 : ID, PASS 일치해야함");
         // Hash암호 방식
         String jwtToken = JWT.create()
                 // token 이름 같은것
@@ -86,6 +89,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 // 내 서버 권한을 아는 고유의 값 -> 일단은 cos로 진행
                 .sign(Algorithm.HMAC512("cos"));
 
+//        log.info("jwtToken = {}", jwtToken);
         log.info("successfulAuthentication 실행 : 인증이 완료");
         response.addHeader("Authorization", "Bearer "+jwtToken);
     }
